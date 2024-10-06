@@ -36,6 +36,7 @@ function circle_matches(points, circle)
 	return math.abs(ratio - 1) < 0.15
 end
 
+-- TODO #enhancement: seems too picky (think cost remains fairly high?)
 function try_circle_fit(points)
 	local centroid = vec:centroid(points)
 	local min_point, max_point = vec:bounding_box(points)

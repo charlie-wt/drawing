@@ -177,7 +177,8 @@ end
 function vec_instance:sum()
 	return self:fold(function(x, y) return x + y end)
 end
--- get squared distance between `self` & `other`
+-- get squared distance between `self` & `other` (or between `self` & the origin, if
+-- `other` is nil)
 function vec_instance:dist_squared(other)
 	if other == nil then
 		return (self ^ 2):sum()

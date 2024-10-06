@@ -38,12 +38,21 @@ function shape_painter.line(shape)
 	love.graphics.line(shape.start.x, shape.start.y,
 	                   shape.finish.x, shape.finish.y)
 end
-
 function shape_painter.circle(shape)
 	love.graphics.circle("line", shape.origin.x, shape.origin.y, shape.radius)
 end
+function shape_painter.rect(shape)
+	for i=1,#shape-1 do
+		love.graphics.line(shape[i].x,   shape[i].y,
+		                   shape[i+1].x, shape[i+1].y)
+	end
+end
 
 function add_shape(optimisation_result)
+	if optimisation_result == nil then
+		return
+	end
+
 	if state.shapes[optimisation_result.kind] == nil then
 		state.shapes[optimisation_result.kind] = {}
 	end
