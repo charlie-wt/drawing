@@ -122,6 +122,29 @@ function vec_class:centroid(vecs)
 	local res = self:sum(vecs)
 	return res / #vecs
 end
+-- get a bounding box around the given vecs; returns 2-list {minimum, maximum}
+function vec_class:bounding_box(vecs)
+	assert(#vecs > 0, "can't given an empty list to `bounding_box`")
+	local minimum = vecs[1]:copy()
+	local maximum = vecs[1]:copy()
+
+	for i=2,#vecs do
+		for j=1,vecs[i]:len() do
+			minimum[j] = math.min(minimum[j], vecs[i][j])
+			maximum[j] = math.max(maximum[j], vecs[i][j])
+		end
+	end
+
+	return minimum, maximum
+end
+-- get the total length of a path formed of the consecutive points
+function vec_class:path_len(vecs)
+	local res = 0
+	for i=2,#vecs - 1 do
+		res = res + vecs[i - 1]:dist(vecs[i])
+	end
+	return res
+end
 
 
 local vec_instance = {}  -- for instance methods
@@ -156,7 +179,11 @@ function vec_instance:sum()
 end
 -- get squared distance between `self` & `other`
 function vec_instance:dist_squared(other)
-	return ((other - self) ^ 2):sum()
+	if other == nil then
+		return (self ^ 2):sum()
+	else
+		return ((other - self) ^ 2):sum()
+	end
 end
 -- get distance between `self` & `other`
 function vec_instance:dist(other)

@@ -1,9 +1,11 @@
+require "shapes.circle"
 require "shapes.line"
 
 
 function try_shape_fit(path)
 	-- TODO #finish
 	local candidate_fns = {
+		try_circle_fit,
 		try_line_fit,
 	}
 

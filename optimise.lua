@@ -6,6 +6,7 @@ require "utils"
 -- `initial`: initial guess (list of numbers)
 -- `cost_fn`: cost function (list of numbers -> number)
 -- `conf`: config table
+-- TODO #bug: tolerance needs tuning, this always runs to 1001 iterations
 function multivar_optimise(initial, cost_fn, conf)
 	-- TODO #enhancement: be able to accept a list of `initial`s, to repeat the process
 	-- & pick the best result

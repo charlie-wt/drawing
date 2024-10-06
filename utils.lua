@@ -76,3 +76,19 @@ function ternary(cond, true_case, false_case)
 		return false_case
 	end
 end
+
+-- out-of-place map
+function foreach(list, fn)
+	local res = {}
+	for i=1,#list do
+		table.insert(res, fn(i, list[i]))
+	end
+	return res
+end
+-- in-place map
+function foreach_(list, fn)
+	for i=1,#list do
+		list[i] = fn(i, list[i])
+	end
+	return list
+end

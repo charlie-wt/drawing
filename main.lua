@@ -39,6 +39,10 @@ function shape_painter.line(shape)
 	                   shape.finish.x, shape.finish.y)
 end
 
+function shape_painter.circle(shape)
+	love.graphics.circle("line", shape.origin.x, shape.origin.y, shape.radius)
+end
+
 function add_shape(optimisation_result)
 	if state.shapes[optimisation_result.kind] == nil then
 		state.shapes[optimisation_result.kind] = {}

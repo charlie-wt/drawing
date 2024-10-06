@@ -54,15 +54,14 @@ function try_line_fit(points)
 	local conf = { max_iterations = 1000 }
 
 	local result = multivar_optimise(initial, make_line_cost(points), conf)
-
-	print('result:')
-	print('\tvars: '..tostring(vec(result.vars)))
-	print('\tcost: '..tostring(result.cost))
-	print('\titerations: '..tostring(result.iterations))
+	-- print('result:')
+	-- print('\tvars: '..tostring(vec(result.vars)))
+	-- print('\tcost: '..tostring(result.cost))
+	-- print('\titerations: '..tostring(result.iterations))
 
 	return {
 		cost = result.cost,
 		shape = line_to_shape(points, vars_to_line(result.vars)),
-		kind = "line"
+		kind = "line",
 	}
 end
