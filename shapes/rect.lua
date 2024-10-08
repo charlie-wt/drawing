@@ -86,10 +86,10 @@ function try_rect_fit(points)
 	local conf = { max_iterations = 1000, tolerance = #points * 3 }
 
 	local result = multivar_optimise(initial, make_rect_cost(points), conf)
-	print('result:')
-	print('\tvars: '..tostring(vec(result.vars)))
-	print('\tcost: '..tostring(result.cost))
-	print('\titerations: '..tostring(result.iterations))
+	-- print('result:')
+	-- print('\tvars: '..tostring(vec(result.vars)))
+	-- print('\tcost: '..tostring(result.cost))
+	-- print('\titerations: '..tostring(result.iterations))
 	local rect = vars_to_rect(result.vars)
 
 	if not rect_matches(points, rect) then
