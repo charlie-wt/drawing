@@ -42,7 +42,7 @@ function try_circle_fit(points)
 	local min_point, max_point = vec:bounding_box(points)
 	local initial = { centroid.x, centroid.y,
 	                  math.max(max_point.x - min_point.x, max_point.y - min_point.y) }
-	local conf = { max_iterations = 1000 }
+	local conf = { max_iterations = 1000, tolerance = #points * 3 }
 
 	local result = multivar_optimise(initial, make_circle_cost(points), conf)
 	-- print('result:')

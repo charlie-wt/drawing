@@ -9,7 +9,6 @@ function acceptable_tolerance(path)
 end
 
 function try_shape_fit(path)
-	-- TODO #finish
 	local candidate_fns = {
 		try_circle_fit,
 		try_line_fit,
@@ -26,7 +25,7 @@ function try_shape_fit(path)
 		end
 	end
 
-	if best.cost > acceptable_tolerance(path) then
+	if best == nil or best.cost > acceptable_tolerance(path) then
 		print("not a shape")
 		return nil
 	end

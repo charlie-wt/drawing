@@ -51,7 +51,7 @@ end
 function try_line_fit(points)
 	local centroid = vec:centroid(points)
 	local initial = { centroid.x, centroid.y, 0 }
-	local conf = { max_iterations = 1000 }
+	local conf = { max_iterations = 1000, tolerance = #points * 3 }
 
 	local result = multivar_optimise(initial, make_line_cost(points), conf)
 	-- print('result:')

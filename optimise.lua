@@ -6,13 +6,11 @@ require "utils"
 -- `initial`: initial guess (list of numbers)
 -- `cost_fn`: cost function (list of numbers -> number)
 -- `conf`: config table
--- TODO #bug: tolerance needs tuning, this always runs to 1001 iterations
 function multivar_optimise(initial, cost_fn, conf)
-	-- TODO #enhancement: be able to accept a list of `initial`s, to repeat the process
-	-- & pick the best result
 	local cfg = update({
-		max_iterations = 10000,
-		tolerance = 0.001,
+		max_iterations = 10000,    -- maximum number of iterations
+		tolerance = 50,            -- cost below which to stop early
+		stability_threshold = 25,  -- number of iterations without cost change above which to stop early
 
 		coef_reflect = 1.0,
 		coef_expand = 2.0,
@@ -24,9 +22,13 @@ function multivar_optimise(initial, cost_fn, conf)
 	local simplex = Simplex.around(initial, nil, cost_fn)
 
 	local iterations = 0
+	local since_last_change = 0
 
 	-- fairly literal translation of https://en.wikipedia.org/wiki/Nelder%E2%80%93Mead_method#One_possible_variation_of_the_NM_algorithm
-	while iterations <= cfg.max_iterations and simplex.verts[1].cost >= cfg.tolerance do
+	while iterations <= cfg.max_iterations and
+	      simplex.verts[1].cost >= cfg.tolerance and
+	      since_last_change < cfg.stability_threshold do
+		local old_cost = simplex.verts[1].cost
 		-- TODO #speed: may be faster to have persistent `centroid`, `reflected` etc.
 		--              objects & modify them, rather than recreating every iteration
 		local centroid = simplex:centroid()
@@ -66,6 +68,11 @@ function multivar_optimise(initial, cost_fn, conf)
 		end
 
 		iterations = iterations + 1
+		if simplex.verts[1].cost == old_cost then
+			since_last_change = since_last_change + 1
+		else
+			since_last_change = 0
+		end
 	end
 
 	return {

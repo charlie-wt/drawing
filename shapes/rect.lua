@@ -83,7 +83,7 @@ function try_rect_fit(points)
 		size.x, size.y,
 		0,
 	}
-	local conf = { max_iterations = 1000 }
+	local conf = { max_iterations = 1000, tolerance = #points * 3 }
 
 	local result = multivar_optimise(initial, make_rect_cost(points), conf)
 	print('result:')
