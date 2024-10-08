@@ -18,7 +18,7 @@ function try_shape_fit(path)
 
 	local best = nil
 
-	-- TODO #speed: parallelise
+	-- TODO #speed: parallelise, dispatch to another job to not block the gui
 	for _,fn in ipairs(candidate_fns) do
 		local res = fn(path)
 		if res ~= nil and (best == nil or res.cost < best.cost) then

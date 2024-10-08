@@ -35,16 +35,9 @@ function simple_rect_distance(point, size)
 	end
 end
 
-function simple_rect_distance_squared(points, size)
-	return sum_of_squares(foreach(points, function(_,  point)
-		return simple_rect_distance(point, size)
-	end))
-end
-
--- TODO #finish: full transform, w/ angle
-function translated_rect_distances_squared(points, rect)
+function transformed_rect_distances_squared(points, rect)
 	return sum_of_squares(foreach(points, function(i,  point)
-		return simple_rect_distance(point - rect.pos, rect.size)
+		return simple_rect_distance(rotated(point - rect.pos, -rect.angle), rect.size)
 	end))
 end
 
@@ -52,14 +45,13 @@ function vars_to_rect(vars)
 	return {
 		pos = vec(vars[1], vars[2]),
 		size = vec(vars[3], vars[4]),
-		-- TODO #finish: angle
-		-- angle = vars[5],
+		angle = vars[5],
 	}
 end
 
 function make_rect_cost(points)
 	return function(vars)
-		return translated_rect_distances_squared(points, vars_to_rect(vars))
+		return transformed_rect_distances_squared(points, vars_to_rect(vars))
 	end
 end
 
@@ -80,7 +72,7 @@ function rect_to_shape(rect)
 		vec(rect.size.x, rect.size.y),
 		vec(0, rect.size.y),
 		vec(0, 0),
-	}, function(_, p) return p + rect.pos end)
+	}, function(_, p) return rotated(p, rect.angle) + rect.pos end)
 end
 
 function try_rect_fit(points)
@@ -89,16 +81,15 @@ function try_rect_fit(points)
 	local initial = {
 		min_point.x, min_point.y,
 		size.x, size.y,
-		-- TODO #finish: angle
-		-- 0,
+		0,
 	}
 	local conf = { max_iterations = 1000 }
 
 	local result = multivar_optimise(initial, make_rect_cost(points), conf)
-	-- print('result:')
-	-- print('\tvars: '..tostring(vec(result.vars)))
-	-- print('\tcost: '..tostring(result.cost))
-	-- print('\titerations: '..tostring(result.iterations))
+	print('result:')
+	print('\tvars: '..tostring(vec(result.vars)))
+	print('\tcost: '..tostring(result.cost))
+	print('\titerations: '..tostring(result.iterations))
 	local rect = vars_to_rect(result.vars)
 
 	if not rect_matches(points, rect) then
