@@ -24,46 +24,53 @@ function multivar_optimise(initial, cost_fn, conf)
 	local iterations = 0
 	local since_last_change = 0
 
+	-- points that get made most loops; make once here to try and save on constructions
+	local reflected = Vert(#simplex.verts[1].point)
+	local expanded = Vert(#simplex.verts[1].point)
+	local contracted = Vert(#simplex.verts[1].point)
+
 	-- fairly literal translation of https://en.wikipedia.org/wiki/Nelder%E2%80%93Mead_method#One_possible_variation_of_the_NM_algorithm
 	while iterations <= cfg.max_iterations and
 	      simplex.verts[1].cost >= cfg.tolerance and
 	      since_last_change < cfg.stability_threshold do
 		local old_cost = simplex.verts[1].cost
-		-- TODO #speed: may be faster to have persistent `centroid`, `reflected` etc.
-		--              objects & modify them, rather than recreating every iteration
 		local centroid = simplex:centroid()
 
 		local worst_vert = last(simplex.verts)
 
-		local reflected = reflection(centroid, worst_vert, cfg.coef_reflect, cost_fn)
+		-- local reflected = reflection(centroid, worst_vert, cfg.coef_reflect, cost_fn)
+		update_reflection(centroid, worst_vert, cfg.coef_reflect, cost_fn, reflected)
 		if reflected.cost < simplex.verts[#simplex.verts - 1].cost and
 		   reflected.cost >= simplex.verts[1].cost then
-			simplex.verts[#simplex.verts] = reflected
+			simplex.verts[#simplex.verts] = reflected:copy()
 			simplex:sort()
 		elseif reflected.cost < simplex.verts[1].cost then
-			local expanded = expansion(centroid, reflected, cfg.coef_expand, cost_fn)
+			-- local expanded = expansion(centroid, reflected, cfg.coef_expand, cost_fn)
+			update_expansion(centroid, reflected, cfg.coef_expand, cost_fn, expanded)
 			if expanded.cost < reflected.cost then
-				simplex.verts[#simplex.verts] = expanded
+				simplex.verts[#simplex.verts] = expanded:copy()
 				simplex:sort()
 			else
-				simplex.verts[#simplex.verts] = reflected
+				simplex.verts[#simplex.verts] = reflected:copy()
 				simplex:sort()
 			end
 		elseif reflected.cost < worst_vert.cost then
-			local contracted = contraction(centroid, reflected, cfg.coef_contract, cost_fn)
+			-- local contracted = contraction(centroid, reflected, cfg.coef_contract, cost_fn)
+			update_contraction(centroid, reflected, cfg.coef_contract, cost_fn, contracted)
 			if contracted.cost < reflected.cost then
-				simplex.verts[#simplex.verts] = contracted
+				simplex.verts[#simplex.verts] = contracted:copy()
 				simplex:sort()
 			else
-				shrink(simplex, cfg.coef_shrink, cost_fn)
+				shrink_inplace(simplex, cfg.coef_shrink, cost_fn)
 			end
 		else
-			local contracted = contraction(centroid, worst_vert, cfg.coef_contract, cost_fn)
+			-- local contracted = contraction(centroid, worst_vert, cfg.coef_contract, cost_fn)
+			update_contraction(centroid, worst_vert, cfg.coef_contract, cost_fn, contracted)
 			if contracted.cost < worst_vert.cost then
-				simplex.verts[#simplex.verts] = contracted
+				simplex.verts[#simplex.verts] = contracted:copy()
 				simplex:sort()
 			else
-				shrink(simplex, cfg.coef_shrink, cost_fn)
+				shrink_inplace(simplex, cfg.coef_shrink, cost_fn)
 			end
 		end
 
@@ -92,6 +99,9 @@ Vert = class({}, function(self, dim_or_point, cost)
 	end
 	self.cost = cost or 0
 end)
+function Vert:copy()
+	return Vert(vec(self.point):copy().data, self.cost)
+end
 
 Simplex = class({}, function(self, dim)
 	self.verts = {}
@@ -157,8 +167,31 @@ end
 contraction = expansion
 
 function shrink(simplex, coef, cost_fn)
+	local best = vec(simplex.verts[1].point)
 	for i=2,#simplex.verts do
 		simplex.verts[i] = contraction(vec(simplex.verts[1].point), simplex.verts[i], coef, cost_fn)
+	end
+	simplex:sort()
+end
+
+function update_reflection(centroid, worst_vert, coef, cost_fn, out)
+	for i=1,#out.point do
+		out.point[i] = centroid[i] + coef * (centroid[i] - worst_vert.point[i])
+	end
+	out.cost = cost_fn(out.point)
+	return out
+end
+
+function update_expansion(centroid, reflected, coef, cost_fn, out)
+	return update_reflection(centroid, reflected, -coef, cost_fn, out)
+end
+
+update_contraction = update_expansion
+
+function shrink_inplace(simplex, coef, cost_fn)
+	local best = vec(simplex.verts[1].point)
+	for i=2,#simplex.verts do
+		update_contraction(best, simplex.verts[i], coef, cost_fn, simplex.verts[i])
 	end
 	simplex:sort()
 end
