@@ -1,6 +1,7 @@
 require "shapes.circle"
 require "shapes.line"
 require "shapes.rect"
+require "utils"
 
 
 function acceptable_tolerance(path)

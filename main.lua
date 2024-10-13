@@ -158,7 +158,8 @@ function love.keyreleased(key, scancode, isrepeat)
 end
 
 function path_finished()
-	add_shape(try_shape_fit(last(state.paths)))
+	-- add_shape(profile(try_shape_fit(last(state.paths))))
+	add_shape(profile(try_shape_fit, 10, last(state.paths)))
 	if config.record_paths then
 		print_path(last(state.paths))
 	end

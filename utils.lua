@@ -55,6 +55,29 @@ function max(list)
 	return res
 end
 
+function mean(list)
+	local res = 0
+	for _, item in ipairs(list) do
+		res = res + item
+	end
+	return res / #list
+end
+
+function profile(fn, repetitions, ...)
+	local res = nil
+
+	local durations = {}
+
+	for i=1,repetitions do
+		local start = love.timer.getTime()
+		res = fn(...)
+		table.insert(durations, love.timer.getTime() - start)
+	end
+
+	print("average time over "..repetitions.." repeats: "..mean(durations).." seconds")
+	return res
+end
+
 -- get the last element in `list`
 function last(list)
 	return list[#list]
