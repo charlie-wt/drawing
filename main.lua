@@ -1,10 +1,14 @@
 -- https://www.jmeiners.com/why-train-when-you-can-optimize/
 
 require "maths"
+require "record"
 require "shapes"
 
 
 config = {
+	record_paths = false,
+	replay_paths_from_file = "testpath",
+
 	path_joint_distance = 10,
 
 	-- background colour
@@ -26,10 +30,19 @@ state = {
 	-- currently drawing a path?
 	is_drawing = false,
 
+	-- if we've specified a config.replay_paths_from_file, then this will be the list of
+	-- paths from that file. (note: does not get reset by reset())
+	paths_to_replay = {},
+	-- how far through the paths to replay are we?
+	replay_idx = 1,
+
 	reset = function(self)
 		self.paths = {}
 		self.shapes = {}
 		self.is_drawing = false
+
+		-- note: don't reset paths_to_replay, just the index.
+		self.replay_idx = 1
 	end,
 }
 
@@ -62,6 +75,8 @@ end
 
 function love.load()
 	math.randomseed(os.time())
+	state.paths_to_replay = read_paths(config.replay_paths_from_file)
+	state:reset()
 end
 
 function draw_paths()
@@ -126,11 +141,26 @@ end
 
 function love.mousereleased(x, y, button)
 	state.is_drawing = false
-	add_shape(try_shape_fit(last(state.paths)))
+	path_finished()
 end
 
 function love.keyreleased(key, scancode, isrepeat)
 	if key == 'r' then
 		state:reset()
+	elseif key == 'space' then
+		-- replay a path, if applicable
+		if state.replay_idx <= #state.paths_to_replay then
+			table.insert(state.paths, state.paths_to_replay[state.replay_idx])
+			path_finished()
+			state.replay_idx = state.replay_idx + 1
+		end
+	end
+end
+
+function path_finished()
+	-- add_shape(profile(try_shape_fit(last(state.paths))))
+	add_shape(profile(try_shape_fit, 10, last(state.paths)))
+	if config.record_paths then
+		print_path(last(state.paths))
 	end
 end
