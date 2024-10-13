@@ -26,7 +26,7 @@ function try_shape_fit(path)
 	end
 
 	if best == nil or best.cost > acceptable_tolerance(path) then
-		print("not a shape")
+		-- print("not a shape")
 		return nil
 	end
 
